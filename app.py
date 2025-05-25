@@ -52,6 +52,6 @@ def analyze_sentiment():
     sentiment = classify_roberta_sentiment(message)
     return jsonify({"sentiment": sentiment})
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 4000))
-    app.run(host="0.0.0.0", port=port)
+# if __name__ == "__main__":
+#     port = int(os.environ.get("PORT", 4000))
+#     app.run(host="0.0.0.0", port=port)
