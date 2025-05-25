@@ -4,19 +4,18 @@ import torch.nn.functional as F
 from flask import Flask, request, jsonify
 import os
 
-# Load model and tokenizer
-model_name = "cardiffnlp/twitter-roberta-base-sentiment"
+# Load smaller model and tokenizer
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-# Label mapping
+# Label mapping for SST-2 (2 labels)
 label_map = {
     0: "Negative",
-    1: "Neutral",
-    2: "Positive"
+    1: "Positive"
 }
 
-def classify_roberta_sentiment(text):
+def classify_distilbert_sentiment(text):
     encoded_input = tokenizer(text, return_tensors='pt')
     
     with torch.no_grad():
@@ -24,15 +23,8 @@ def classify_roberta_sentiment(text):
 
     probs = F.softmax(logits, dim=1)[0]
 
-    neutral_score = probs[1].item()
-    negative_score = probs[0].item()
-    positive_score = probs[2].item()
-
-    if neutral_score > 0.3 or (negative_score < 0.49 and positive_score < 0.49):
-        sentiment = "Neutral"
-    else:
-        top_label = torch.argmax(probs).item()
-        sentiment = label_map[top_label] if top_label != 1 else "Neutral"
+    top_label = torch.argmax(probs).item()
+    sentiment = label_map[top_label]
 
     return sentiment
 
@@ -49,9 +41,9 @@ def analyze_sentiment():
     if not message:
         return jsonify({"error": "No 'message' provided."}), 400
 
-    sentiment = classify_roberta_sentiment(message)
+    sentiment = classify_distilbert_sentiment(message)
     return jsonify({"sentiment": sentiment})
 
 if __name__ == "__main__":
-    
-    app.run(host="0.0.0.0", debug=True)
+    port = int(os.environ.get("PORT", 4000))
+    app.run(host="0.0.0.0", port=port)
