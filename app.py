@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import torch.nn.functional as F
 from flask import Flask, request, jsonify
+import os
 
 # Load model and tokenizer
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
@@ -37,11 +38,9 @@ def classify_roberta_sentiment(text):
 
 app = Flask(__name__)
 
-
 @app.route('/', methods=['GET'])
 def home():
     return "Hello, world!"
-
 
 @app.route('/analyze', methods=['POST'])
 def analyze_sentiment():
@@ -54,4 +53,5 @@ def analyze_sentiment():
     return jsonify({"sentiment": sentiment})
 
 if __name__ == "__main__":
-    app.run(port=1212)
+    port = int(os.environ.get("PORT", 4000))
+    app.run(host="0.0.0.0", port=port)
